@@ -1,0 +1,4 @@
+transaction_id,timestamp,user_id,amount,currency
+tx001,2023-01-01T10:00:00,user1,12.50,USD
+tx002,2023-01-01T10:05:00,user2,7.99,USD
+tx003,2023-01-01T10:10:00,user3,20.00,EUR
