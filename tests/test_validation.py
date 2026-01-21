@@ -25,9 +25,9 @@ def test_validate_positive(tmp_path):
                                       'currency': str})
 
     results = []
-    for row in df.itertuples(index=False):
-        results.append(validate_positive(value= row.amount, row_num= row.index, column= 'amount'))
-        print(type(row.amount))
+    for _, row in df.iterrows():
+        results.append(validate_positive(value= row['amount'], row_num= row.index, column= 'amount'))
+        print(type(row['amount']))
         
     assert type(results[0]) == ValidationError
     assert type(results[1]) == ValidationError

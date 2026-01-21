@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Union
 from ingestion.models import Transaction
 from datetime import datetime
+import pandas as pd
 
 def init_db(db_path: Path) -> None:
     conn = sqlite3.connect(db_path)
@@ -34,30 +35,20 @@ def count_transactions(db_path: Path) -> int:
     conn.close()
     return result[0]
 
-def insert_transaction(db_path: Path, 
-                       transaction: Union[Transaction, tuple, None] = None,
-                       transaction_id: str = None, 
-                       timestamp: str = None, 
-                       user_id: str = None, 
-                       amount: float = None,
-                       currency: str = None) -> None:
+def insert_transaction(db_path: Path, transaction_data: dict) -> None:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-
-    if isinstance(transaction, Transaction):
-        transaction_id = transaction.transaction_id
-        timestamp = str(transaction.timestamp)
-        user_id = transaction.user_id
-        amount = transaction.amount
-        currency = transaction.currency
-    
 
     cursor.execute(
         """
         INSERT INTO transactions (transaction_id, timestamp, user_id, amount, currency)
         VALUES (?, ?, ?, ?, ?)
         """,
-        (transaction_id, timestamp, user_id, amount, currency)
+        (transaction_data['transaction_id'], 
+         str(transaction_data['timestamp']), 
+         transaction_data['user_id'], 
+         transaction_data['amount'], 
+         transaction_data['currency'])
     )
     conn.commit()
     conn.close()

@@ -47,4 +47,4 @@ def test_invalid_rows_logged_and_skipped(tmp_path, caplog):
     assert result_sql == 1
 
     # 5. Assert warning was logged
-    assert "Invalid transaction row" in caplog.text
+    assert "Found 1 validation errors" in caplog.text
