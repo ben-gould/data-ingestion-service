@@ -39,7 +39,7 @@ def test_invalid_rows_logged_and_skipped(tmp_path, caplog):
     caplog.set_level(logging.WARNING)
 
     # 3. Run ingestion
-    result = load_transactions(csv_path, test_db_path)
+    result, _ = load_transactions(csv_path, test_db_path)
     result_sql = count_transactions(test_db_path)
 
     # 4. Assert correct number of valid rows

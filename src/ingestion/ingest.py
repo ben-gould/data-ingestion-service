@@ -55,11 +55,24 @@ def load_transactions(csv_path: Path, db_path: Path):
         logger.info("All rows passed validation")
 
     transactions = []
-    for _, row in valid_df.iterrows(): 
+    success_count = 0
+    for i, row in valid_df.iterrows(): 
         transaction = Transaction(**row)
         transactions.append(transaction)
-        insert_transaction(db_path, row.to_dict()) 
-    return transactions 
+        try:
+            insert_transaction(db_path, row.to_dict()) 
+            success_count += 1
+        except Exception as e:
+             logger.warning(f"Failed to insert validated row {i}, got error: {e}")
+
+
+    transactions_dict = {
+         "total_rows": len(df),
+         "valid_rows" : len(valid_df),
+         "invalid_rows" : len(invalid_df),
+         "inserted_rows": success_count
+    }
+    return transactions, transactions_dict
 
 
 if __name__ == "__main__":
