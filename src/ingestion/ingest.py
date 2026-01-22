@@ -8,29 +8,40 @@ from ingestion.db import init_db
 from ingestion.db import insert_transaction
 from ingestion.validation import DataValidator, validate_not_null, validate_positive, validate_date_not_future
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s - %(message)s"
-)
-
 logger = logging.getLogger(__name__)
 
 db_path = Path("data.db")
-if db_path.exists():
-       db_path.unlink()
-init_db(db_path)
-logger.info("The database %s is ready", db_path)
+init_db(db_path) 
+logger.info("Database ready at %s", db_path)
 
+def detect_file_format(filepath: Path) -> str:
+        if str(filepath).endswith('.csv'):
+            return "csv"
+        elif str(filepath).endswith('json'):
+            return "json"
+        else:
+            raise ValueError(f"Data at {filepath} to be ingested is not a supported type (csv or JSON)")
+     
 
-def load_transactions(csv_path: Path, db_path: Path):
-    df = pd.read_csv(csv_path, dtype={
-         'transaction_id': str,
-    'timestamp': str,
-    'user_id': str,
-    'amount': str, 
-    'currency': str
-    }) 
-    logger.info(f"Read in csv with {len(df)} rows from {csv_path}")
+def read_file(filepath: Path) -> pd.DataFrame:
+    filetype = detect_file_format(filepath)
+    if filetype == "csv":
+        df = pd.read_csv(filepath, dtype={
+                        'transaction_id': str,
+                        'timestamp': str,
+                        'user_id': str,
+                        'amount': str, 
+                        'currency': str
+                        })
+    elif filetype == "json":
+        df = pd.read_json(filepath, orient= 'records')
+    return df
+
+def load_transactions(file_path: Path, db_path: Path):
+    filetype = detect_file_format(file_path)
+    df = read_file(file_path)
+
+    logger.info(f"Read in csv with {len(df)} rows from {file_path}. Filetype is {filetype}.")
 
     validator = DataValidator()
     validator.add_rule('amount', validate_not_null)
@@ -41,17 +52,26 @@ def load_transactions(csv_path: Path, db_path: Path):
 
     validation_result = validator.validate(df)
     if not validation_result.is_valid:
+        print(f"DEBUG: Found {len(validation_result.errors)} errors")
         logger.warning(f"Found {len(validation_result.errors)} validation errors")
 
         invalid_row_numbers = {err.row_number for err in validation_result.errors}
         valid_df = df[~df.index.isin(invalid_row_numbers)]
         invalid_df = df[df.index.isin(invalid_row_numbers)]
+
+        print(f"Total errors: {len(validation_result.errors)}")
+        print(f"Error details: {[(e.row_number, e.column) for e in validation_result.errors]}")
+        print(f"Unique invalid rows: {invalid_row_numbers}")
+        print(f"Invalid df length: {len(invalid_df)}")
+
         logger.info(f"Logging {len(valid_df)} rows and rejecting {len(invalid_df)} rows")
         for error in validation_result.errors:
              logger.info(f"The error for row {error.row_number} is {error.error_message}")
     
     else:
+        print("DEBUG: All rows valid")
         valid_df = df
+        invalid_df = pd.DataFrame()
         logger.info("All rows passed validation")
 
     transactions = []
@@ -80,7 +100,16 @@ if __name__ == "__main__":
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
+
+    db_path = Path("test_data.db") 
+    if db_path.exists():
+        db_path.unlink()
+    init_db(db_path)
     
-    data_path = Path("/Users/bengould/Documents/Projects/data-ingestion-service/data/sample.csv")
-    txns = load_transactions(data_path, Path("data.db"))
-    logger.info("Loaded %s transactions", len(txns))
+    csv_data_path = Path("/Users/bengould/Documents/Projects/data-ingestion-service/data/sample.csv")
+    txns = load_transactions(csv_data_path, db_path)
+    logger.info("Loaded %s transactions from csv", len(txns))
+
+    json_data_path = Path("/Users/bengould/Documents/Projects/data-ingestion-service/data/sample.json")
+    txns_json = load_transactions(json_data_path, db_path)
+    logger.info("Loaded %s transactions from json", len(txns_json))

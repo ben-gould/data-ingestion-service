@@ -38,7 +38,8 @@ def validate_positive(value: float, row_num: int, column: str) -> Optional[Valid
 
 def validate_date_not_future(value: str, row_num: int, column: str) -> Optional[ValidationError]:
     try:
-        date = datetime.fromisoformat(value)
+        
+        date = datetime.fromisoformat(str(value))
     except (ValueError, TypeError):
         return ValidationError(f"Invalid date format in row {row_num}: {value}")
 

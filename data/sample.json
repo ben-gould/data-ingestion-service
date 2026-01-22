@@ -1,0 +1,6 @@
+[
+    {"transaction_id": "tx001", "timestamp": "2023-01-01T10:00:00", "user_id":"user1", "amount": 12.50, "currency": "USD"},
+    {"transaction_id": "tx002", "timestamp": "2023-01-01T10:05:00", "user_id":"user2", "amount": 7.99, "currency": "USD"},
+    {"transaction_id": "tx003", "timestamp": "2023-01-01T10:10:00", "user_id":"user3", "amount": 20.00, "currency": "EUR"},
+    {"transaction_id": "tx004", "timestamp": "2023-01-01T10:10:00", "user_id":"user4", "amount": 1.10, "currency": "EUR"}
+]

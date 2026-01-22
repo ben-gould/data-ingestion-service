@@ -36,19 +36,17 @@ def count_transactions(db_path: Path) -> int:
     return result[0]
 
 def insert_transaction(db_path: Path, transaction_data: dict) -> None:
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        INSERT INTO transactions (transaction_id, timestamp, user_id, amount, currency)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (transaction_data['transaction_id'], 
-         str(transaction_data['timestamp']), 
-         transaction_data['user_id'], 
-         transaction_data['amount'], 
-         transaction_data['currency'])
-    )
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO transactions (transaction_id, timestamp, user_id, amount, currency)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (transaction_data['transaction_id'], 
+            str(transaction_data['timestamp']), 
+            transaction_data['user_id'], 
+            transaction_data['amount'], 
+            transaction_data['currency'])
+        )
+        conn.commit()
