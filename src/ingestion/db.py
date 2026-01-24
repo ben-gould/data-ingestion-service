@@ -6,6 +6,7 @@ from datetime import datetime
 import pandas as pd
 
 def init_db(db_path: Path) -> None:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
