@@ -1,2 +1,18 @@
 # data-ingestion-service
-Build a Python service that ingests structured data files (CSV or JSON), validates them against a schema, persists valid records to a relational database, rejects invalid rows with clear error messages, and exposes summary statistics via SQL queries.
+Production-ready data validation and ingestion pipeline.
+
+## Setup
+```bash
+uv sync
+```
+
+## Usage
+```bash
+uv run python -m ingestion.ingest
+```
+
+## Testing
+```bash
+uv run pytest
+```
+```
