@@ -49,7 +49,7 @@ def validate_date_not_future(value: str, row_num: int, column: str) -> Optional[
 
 def validate_not_null(value: any, row_num: int, column: str) -> Optional[ValidationError]:
     if value is None or (isinstance(value, str) and value.strip == "") or (isinstance(value, float) and math.isnan(value)):
-        return ValidationError(f"Value in row {row_num}, column {column} cannot be null")
+        return ValidationError(row_num, column, value, f"Value in row {row_num}, column {column} cannot be null")
     return None
 
 class DataValidator:

@@ -1,0 +1,35 @@
+database:
+  path: "data/transactions.db"
+  
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+input:
+  # Column type mappings for CSV files (JSON preserves types)
+  csv_dtypes:
+    transaction_id: str
+    timestamp: str
+    user_id: str
+    amount: float
+    currency: str
+
+validation:
+  # Which validations apply to which columns
+  rules:
+    transaction_id:
+      - validate_not_null
+    amount:
+      - validate_not_null
+      - validate_positive
+    timestamp:
+      - validate_not_null
+      - validate_date_not_future
+    user_id:
+      - validate_not_null
+    currency:
+      - validate_not_null
+
+files:
+  input_dir: "data/input"
+  archive_dir: "data/archive"
