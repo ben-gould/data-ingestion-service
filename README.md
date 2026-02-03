@@ -61,6 +61,7 @@ database:
 Save the file and run the pipeline. Changes take effect immediately.
 
 ## Project Structure
+<pre>
 data-ingestion-service/
 ├── src/
     └── ingestion/
@@ -83,6 +84,7 @@ data-ingestion-service/
 ├── config.yaml
 ├── pyproject.toml
 └── README.md
+</pre>
 
 ## Architecture
 ![Architecture Diagram](docs/data-ingestion.png)
