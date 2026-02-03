@@ -10,7 +10,7 @@ def main():
     
     parser = argparse.ArgumentParser(description="Data ingestion pipeline",
                                      epilog="Example: python -m ingestion --input data.csv --db output.db")
-    parser.add_argument('--input', type=Path, help='Input file (CSV/JSON)')
+    parser.add_argument('--input', type=Path, required=True, help='Input file (CSV/JSON)')
     parser.add_argument('--db', type=Path, help='Database path')
     parser.add_argument('--config', type=Path, default='config.yaml', help='Config file')
 
@@ -20,6 +20,7 @@ def main():
     init_db(db_path)
 
     _, result_dict = load_transactions(args.input, db_path)
+    print(f"Arguments loaded to load_transactions: {args.input}")
 
     print(f"Processed {result_dict['total_rows']} rows")
     print(f"Inserted {result_dict['valid_rows']} rows")

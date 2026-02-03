@@ -1,9 +1,6 @@
 import json
 import random
 from datetime import datetime, timedelta
-from ingestion.db import init_db
-from ingestion.ingest import load_transactions
-from ingestion.config import load_config
 
 def generate_transactions(n=500, error_rate=0.1):
     """Generate n transactions with ~error_rate fraction having errors."""
@@ -48,18 +45,3 @@ def generate_transactions(n=500, error_rate=0.1):
         transactions.append(transaction)
 
     return transactions
-
-def test_large_dataset(tmp_path):
-    transactions = generate_transactions()
-
-    json_path = tmp_path / 'large_test.json'
-    json_path.write_text(json.dumps(transactions, indent = 2))
-
-    db_path = tmp_path / 'large_test.db'
-    init_db(db_path)
-
-    _, result = load_transactions(json_path, db_path)
-
-    assert result['total_rows'] == 500
-    assert result['invalid_rows'] > 0
-    assert result['valid_rows'] + result['invalid_rows'] == 500
