@@ -1,9 +1,9 @@
 import pandas as pd
-from validation import ValidationResult
-from ingest import load_transactions
+from ingestion.validation import ValidationResult
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+from pathlib import Path
 
 def calculate_data_quality_metrics(df: pd.DataFrame) -> dict:
     'Calculate basic statistics for each column'
@@ -11,22 +11,26 @@ def calculate_data_quality_metrics(df: pd.DataFrame) -> dict:
 
     metrics = {}
     
-    # count nulls, every column
-    for col in df.columns():
+    # count nulls for every column
+    for col in df.columns:
         null_count = df[col].isnull().sum()
         metrics[col] = {
             'null_count' : null_count,
             'null_pct' : (null_count/len(df)) * 100
         }
     
-    if 'amount' in df.columns():
+    # calculate numerical statistics for amount
+    if 'amount' in df.columns:
+        valid_amounts = pd.to_numeric(df['amount'], errors='coerce').dropna()
+    
         metrics['amount'].update({
-            'min' : df['amount'].min(),
-            'max' : df['amount'].max(),
-            'mean' : df['amount'].mean(),
-            'median' : df['amount'].median()
+            'min': valid_amounts.min(),
+            'max': valid_amounts.max(),
+            'mean': valid_amounts.mean(),
+            'median': valid_amounts.median()
         })
 
+    # calculate value counts for user id's and currencies
     for col in ['user_id', 'currency']:
         metrics[col]['value_counts'] = df[col].value_counts().to_dict()
 
@@ -39,15 +43,15 @@ def summarize_errors(validation_result: ValidationResult) -> dict:
 
     errors = validation_result.errors
     for error in errors:
-        if error.message.endswith('cannot be null'):
-            error_type = "missing values"
-        elif error.message.startswith('Value cannot be negative'):
-            error_type = "negative amount"
-        elif "date" in error.message.lower():
-            error_type = "invalid date"
+        if error.error_message.endswith('cannot be null'):
+            error_type = "missing_values"
+        elif error.error_message.startswith('Value cannot be negative'):
+            error_type = "negative_amount"
+        elif "date" in error.error_message.lower():
+            error_type = "invalid_date"
         else:
             error_type = "other errors"
-        error_breakdown['error_type'] = error_breakdown.get(error_type, 0) + 1
+        error_breakdown[error_type] = error_breakdown.get(error_type, 0) + 1
     
     return error_breakdown
     
@@ -115,11 +119,16 @@ def render_html_template(metrics, charts, summary):
     </html>
     """
 
-def generate_quality_report(df, validation_result, summary):
+def generate_quality_report(df, validation_result, summary, output_dir=Path('reports')):
     metrics = calculate_data_quality_metrics(df) 
     error_breakdown = summarize_errors(validation_result) 
-    charts = {'errors': create_error_chart(error_breakdown)} 
+    charts = {'error_types': create_error_chart(error_breakdown)} 
     html = render_html_template(metrics, charts, summary) 
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    report_path = output_dir / 'data_quality_report.html'
     
-    with open('report.html', 'w') as f:
+    with open(report_path, 'w') as f:
         f.write(html)
+
+    return str(report_path)
