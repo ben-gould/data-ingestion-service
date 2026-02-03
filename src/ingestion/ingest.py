@@ -4,11 +4,13 @@ import pandas as pd
 from pathlib import Path 
 from ingestion.models import Transaction 
 import logging
-from pydantic import ValidationError
 from ingestion.db import init_db
 from ingestion.db import insert_transaction
 from ingestion.validation import DataValidator, validate_not_null, validate_positive, validate_date_not_future
 from ingestion.config import load_config
+#from ingestion.reporting import generate_quality_report
+from ingestion.db import transaction_exists
+from ingestion.reporting import generate_quality_report
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ def read_file(filepath: Path) -> pd.DataFrame:
         df = pd.read_json(filepath, orient= 'records')
     return df
 
-def load_transactions(file_path: Path, db_path: Path):
+def load_transactions(file_path: Path, db_path: Path, output_dir=Path('reports')):
     filetype = detect_file_format(file_path)
     df = read_file(file_path)
 
@@ -67,22 +69,32 @@ def load_transactions(file_path: Path, db_path: Path):
 
     transactions = []
     success_count = 0
+    updated_count = 0
     for i, row in valid_df.iterrows(): 
         transaction = Transaction(**row)
         transactions.append(transaction)
         try:
-            insert_transaction(db_path, row.to_dict()) 
-            success_count += 1
+            if transaction_exists(db_path, row['transaction_id']):
+                insert_transaction(db_path, row.to_dict()) 
+                updated_count +=1
+            else:
+                insert_transaction(db_path, row.to_dict())
+                success_count += 1
         except Exception as e:
              logger.warning(f"Failed to insert validated row {i}, got error: {e}")
-
 
     transactions_dict = {
          "total_rows": len(df),
          "valid_rows" : len(valid_df),
          "invalid_rows" : len(invalid_df),
-         "inserted_rows": success_count
+         "inserted_rows": success_count,
+         "updated_rows" : updated_count
     }
+
+    report_path = generate_quality_report(df, validation_result, transactions_dict)
+
+    transactions_dict['report_path'] = report_path
+
     return transactions, transactions_dict
 
 

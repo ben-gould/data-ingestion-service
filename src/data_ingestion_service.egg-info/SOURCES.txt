@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/data_ingestion_service.egg-info/PKG-INFO
+src/data_ingestion_service.egg-info/SOURCES.txt
+src/data_ingestion_service.egg-info/dependency_links.txt
+src/data_ingestion_service.egg-info/top_level.txt
+src/ingestion/__init__.py
+src/ingestion/cli.py
+src/ingestion/db.py
+src/ingestion/ingest.py
+src/ingestion/models.py
+tests/test_ingest.py
+tests/test_placeholder.py
+tests/test_validation.py

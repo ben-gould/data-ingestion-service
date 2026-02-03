@@ -4,6 +4,7 @@ from ingestion.db import count_transactions, init_db
 import logging
 import json
 from datetime import datetime
+from conftest import generate_transactions
 
 logging.basicConfig(
     level=logging.INFO,
@@ -108,3 +109,18 @@ def test_invalid_json(tmp_path, caplog):
     assert "Found 1 validation errors" in caplog.text
 
 # def test_equivalent_csv_json()
+
+def test_large_dataset(tmp_path):
+    transactions = generate_transactions()
+
+    json_path = tmp_path / 'large_test.json'
+    json_path.write_text(json.dumps(transactions, indent = 2))
+
+    db_path = tmp_path / 'large_test.db'
+    init_db(db_path)
+
+    _, result = load_transactions(json_path, db_path)
+
+    assert result['total_rows'] == 500
+    assert result['invalid_rows'] > 0
+    assert result['valid_rows'] + result['invalid_rows'] == 500
