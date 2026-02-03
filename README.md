@@ -85,7 +85,7 @@ data-ingestion-service/
 └── README.md
 
 ## Architecture
-![Architecture Diagram](docs/architecture.png)
+![Architecture Diagram](docs/data-ingestion.png)
 
 ## Demo
 ```bash
