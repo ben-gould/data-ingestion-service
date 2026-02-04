@@ -20,7 +20,7 @@ nulls) and generates HTML reports showing what passed/failed and why.
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and setup
-git clone 
+git clone https://github.com/ben-gould/data-ingestion-service
 cd data-ingestion-service
 uv sync
 
