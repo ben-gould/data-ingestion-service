@@ -96,22 +96,3 @@ def load_transactions(file_path: Path, db_path: Path, output_dir=Path('reports')
     transactions_dict['report_path'] = report_path
 
     return transactions, transactions_dict
-
-
-if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-
-    config = load_config()
-    db_path = Path(config['database']['path'])
-    init_db(db_path)
-    
-    csv_data_path = Path("/Users/bengould/Documents/Projects/data-ingestion-service/data/sample.csv")
-    txns = load_transactions(csv_data_path, db_path)
-    logger.info("Loaded %s transactions from csv", len(txns))
-
-    json_data_path = Path("/Users/bengould/Documents/Projects/data-ingestion-service/data/sample.json")
-    txns_json = load_transactions(json_data_path, db_path)
-    logger.info("Loaded %s transactions from json", len(txns_json))

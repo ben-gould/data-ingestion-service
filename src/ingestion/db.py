@@ -21,7 +21,6 @@ def init_db(db_path: Path) -> None:
 
 
 def count_transactions(db_path: Path) -> int:
-    conn = sqlite3.connect(db_path)
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute(
